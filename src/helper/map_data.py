@@ -1,4 +1,8 @@
+import pandas as pd
+import numpy as np
+
 def convert_raw_to_macro(y_raw_list):
+
     """Converte predições y_raw de volta para y_macro (0, 1, 2)"""
     macro_map = {
         "c1_p1": 0,

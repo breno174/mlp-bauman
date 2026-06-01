@@ -1,3 +1,8 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 def plot_accuracy_comparison(
     all_results, species_names, save_path, topology_text=None, x_labels=None
 ):
@@ -534,3 +539,76 @@ def plot_decay_comparison(all_results, save_path):
     fig.savefig(save_path, dpi=150, bbox_inches="tight")
     print(f"   Gráfico de decaimento salvo em: {save_path}")
     plt.close(fig)
+
+# =====================================================
+# FUNÇÕES DE PLOTAGEM ESPECÍFICAS PARA MLP
+# =====================================================
+
+def plot_mlp_loss(train_loss, test_loss, title, save_path):
+    """
+    Plota a curva de perda (Loss/EQM) ao longo das épocas de treinamento,
+    lado a lado (Treino e Teste).
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    epochs = range(1, len(train_loss) + 1)
+    
+    # Gráfico de Treino
+    axes[0].plot(epochs, train_loss, color="purple", linewidth=2, marker="o", markersize=3, label="Treino")
+    axes[0].set_title("Loss - Treino", fontsize=12)
+    axes[0].set_xlabel("Época", fontsize=11)
+    axes[0].set_ylabel("Loss (Perda)", fontsize=11)
+    axes[0].grid(True, linestyle="--", alpha=0.4)
+    axes[0].legend(fontsize=10)
+    
+    # Gráfico de Teste
+    if test_loss is not None:
+        axes[1].plot(epochs, test_loss, color="orange", linewidth=2, marker="o", markersize=3, label="Teste")
+        axes[1].set_title("Loss - Teste", fontsize=12)
+        axes[1].set_xlabel("Época", fontsize=11)
+        axes[1].set_ylabel("Loss", fontsize=11)
+        axes[1].grid(True, linestyle="--", alpha=0.4)
+        axes[1].legend(fontsize=10)
+    else:
+        axes[1].axis('off')
+    
+    fig.suptitle(title, fontsize=14, fontweight="bold")
+    plt.tight_layout()
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    print(f"   Gráfico de perda salvo em: {save_path}")
+    plt.close(fig)
+
+
+def plot_mlp_confusion_matrix(cm_train, cm_test, species_names, title, save_path):
+    """
+    Plota as matrizes de confusão lado a lado (Treino e Teste).
+    """
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+    
+    for ax, cm, subset in zip(axes, [cm_train, cm_test], ["Treino", "Teste"]):
+        im = ax.imshow(cm, interpolation="nearest", cmap="Blues")
+        fig.colorbar(im, ax=ax)
+        
+        num_classes = len(species_names)
+        ax.set_xticks(range(num_classes))
+        ax.set_yticks(range(num_classes))
+        ax.set_xticklabels(species_names, rotation=45, ha="right", fontsize=10)
+        ax.set_yticklabels(species_names, fontsize=10)
+        ax.set_xlabel("Predito", fontsize=11)
+        ax.set_ylabel("Real", fontsize=11)
+        
+        acc = np.trace(cm) / np.sum(cm)
+        ax.set_title(f"{subset} (Acurácia = {acc:.2%})", fontsize=12, fontweight="bold")
+        
+        # Textos nas células
+        for i in range(num_classes):
+            for j in range(num_classes):
+                val = cm[i, j]
+                color = "white" if val > cm.max() * 0.6 else "black"
+                ax.text(j, i, str(val), ha="center", va="center", fontsize=12, color=color, fontweight="bold")
+                
+    fig.suptitle(title, fontsize=14, fontweight="bold")
+    plt.tight_layout()
+    fig.savefig(save_path, dpi=150, bbox_inches="tight")
+    print(f"   Matrizes de confusão salvas em: {save_path}")
+    plt.close(fig)
+
